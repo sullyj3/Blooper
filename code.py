@@ -2,6 +2,7 @@ import time
 
 from adafruit_circuitplayground import cp
 
+# 4th octave. C4, D4, etc
 PTCH_C = 261.63
 PTCH_D = 293.67
 PTCH_E = 329.63
@@ -10,6 +11,7 @@ PTCH_G = 392.0
 PTCH_A = 440.0
 PTCH_B = 493.88
 
+# blue to pink gradient
 colors = [
         (0,0,50),
         (0,55,67),
@@ -21,9 +23,6 @@ colors = [
         ]
 
 BLACK = (0,0,0)
-
-octve_scalar = 2
-
 
 def arp():
     cp.play_tone(PTCH_C*2**0, 0.06)
@@ -39,9 +38,8 @@ def keyboard():
 
     buttons = Buttons()
 
-    octve_scalar = 2
+    octave_offset = 1
 
-    time.sleep(1)
     while True:
         buttons.update()
 
@@ -50,43 +48,43 @@ def keyboard():
 
         if buttons.pressed["A1"]:
             cp.stop_tone()
-            cp.start_tone(PTCH_C * octve_scalar)
+            cp.start_tone(PTCH_C * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[6] = colors[0]
 
         if buttons.pressed["A2"]:
             cp.stop_tone()
-            cp.start_tone(PTCH_D * octve_scalar)
+            cp.start_tone(PTCH_D * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[7] = colors[1]
 
         if buttons.pressed["A3"]:
             cp.stop_tone()
-            cp.start_tone(PTCH_E * octve_scalar)
+            cp.start_tone(PTCH_E * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[8] = colors[2]
 
         if buttons.pressed["A4"]:
             cp.stop_tone()
-            cp.start_tone(PTCH_F * octve_scalar)
+            cp.start_tone(PTCH_F * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[1] = colors[3]
 
         if buttons.pressed["A5"]:
             cp.stop_tone()
-            cp.start_tone(PTCH_G * octve_scalar)
+            cp.start_tone(PTCH_G * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[2] = colors[4]
 
         if buttons.pressed["A6"]:
             cp.stop_tone()
-            cp.start_tone(PTCH_A * octve_scalar)
+            cp.start_tone(PTCH_A * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[3] = colors[5]
 
         if buttons.pressed["TX"]:
             cp.stop_tone()
-            cp.start_tone(PTCH_B * octve_scalar)
+            cp.start_tone(PTCH_B * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[4] = colors[6]
 
