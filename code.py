@@ -51,58 +51,48 @@ def keyboard():
         if buttons.pressed["A1"]:
             cp.stop_tone()
             cp.start_tone(PTCH_C * octve_scalar)
+            cp.pixels.fill(BLACK)
             cp.pixels[6] = colors[0]
-        elif buttons.released["A1"] and not any_pressed:
-            cp.stop_tone()
-            cp.pixels[6] = BLACK
 
         if buttons.pressed["A2"]:
             cp.stop_tone()
             cp.start_tone(PTCH_D * octve_scalar)
+            cp.pixels.fill(BLACK)
             cp.pixels[7] = colors[1]
-        elif buttons.released["A2"] and not any_pressed:
-            cp.stop_tone()
-            cp.pixels[7] = BLACK
 
         if buttons.pressed["A3"]:
             cp.stop_tone()
             cp.start_tone(PTCH_E * octve_scalar)
+            cp.pixels.fill(BLACK)
             cp.pixels[8] = colors[2]
-        elif buttons.released["A3"] and not any_pressed:
-            cp.stop_tone()
-            cp.pixels[8] = BLACK
 
         if buttons.pressed["A4"]:
             cp.stop_tone()
             cp.start_tone(PTCH_F * octve_scalar)
+            cp.pixels.fill(BLACK)
             cp.pixels[1] = colors[3]
-        elif buttons.released["A4"] and not any_pressed:
-            cp.stop_tone()
-            cp.pixels[1] = BLACK
 
         if buttons.pressed["A5"]:
             cp.stop_tone()
             cp.start_tone(PTCH_G * octve_scalar)
+            cp.pixels.fill(BLACK)
             cp.pixels[2] = colors[4]
-        elif buttons.released["A5"] and not any_pressed:
-            cp.stop_tone()
-            cp.pixels[2] = BLACK
 
         if buttons.pressed["A6"]:
             cp.stop_tone()
             cp.start_tone(PTCH_A * octve_scalar)
+            cp.pixels.fill(BLACK)
             cp.pixels[3] = colors[5]
-        elif buttons.released["A6"] and not any_pressed:
-            cp.stop_tone()
-            cp.pixels[3] = BLACK
 
         if buttons.pressed["TX"]:
             cp.stop_tone()
             cp.start_tone(PTCH_B * octve_scalar)
+            cp.pixels.fill(BLACK)
             cp.pixels[4] = colors[6]
-        elif buttons.released["TX"] and not any_pressed:
+
+        if not any_pressed:
             cp.stop_tone()
-            cp.pixels[4] = BLACK
+            cp.pixels.fill(BLACK)
 
 
 class Buttons:
