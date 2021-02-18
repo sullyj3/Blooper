@@ -3,13 +3,13 @@ import time
 from adafruit_circuitplayground import cp
 
 # 4th octave. C4, D4, etc
-PTCH_C = 261.63
-PTCH_D = 293.67
-PTCH_E = 329.63
-PTCH_F = 349.23
-PTCH_G = 392.0
-PTCH_A = 440.0
-PTCH_B = 493.88
+PITCH_C = 261.63
+PITCH_D = 293.67
+PITCH_E = 329.63
+PITCH_F = 349.23
+PITCH_G = 392.0
+PITCH_A = 440.0
+PITCH_B = 493.88
 
 # blue to pink gradient
 colors = [
@@ -27,21 +27,21 @@ BLACK = (0,0,0)
 ALL_KEYS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX"]
 
 def arp():
-    cp.play_tone(PTCH_C*2**0, 0.06)
-    cp.play_tone(PTCH_G*2**0, 0.06)
-    cp.play_tone(PTCH_D*2**1, 0.06)
-    cp.play_tone(PTCH_A*2**1, 0.06)
-    cp.play_tone(PTCH_E*2**2, 0.06)
-    cp.play_tone(PTCH_B*2**2, 0.06)
+    cp.play_tone(PITCH_C*2**0, 0.06)
+    cp.play_tone(PITCH_G*2**0, 0.06)
+    cp.play_tone(PITCH_D*2**1, 0.06)
+    cp.play_tone(PITCH_A*2**1, 0.06)
+    cp.play_tone(PITCH_E*2**2, 0.06)
+    cp.play_tone(PITCH_B*2**2, 0.06)
 
 key_note_map = {
-        "A1": PTCH_C,
-        "A2": PTCH_D,
-        "A3": PTCH_E,
-        "A4": PTCH_F,
-        "A5": PTCH_G,
-        "A6": PTCH_A,
-        "TX": PTCH_B,
+        "A1": PITCH_C,
+        "A2": PITCH_D,
+        "A3": PITCH_E,
+        "A4": PITCH_F,
+        "A5": PITCH_G,
+        "A6": PITCH_A,
+        "TX": PITCH_B,
         }
 
 # associate each key with (the index of its corresponding pixel, the index of the color in the colors array)
