@@ -43,6 +43,8 @@ key_note_map = {
         "A6": PTCH_A,
         "TX": PTCH_B,
         }
+
+# associate each key with (the index of its corresponding pixel, the index of the color in the colors array)
 key_pixel_color_map = {
         "A1": (6,0),
         "A2": (7,1),
@@ -119,7 +121,6 @@ usage:
 '''
 class Buttons:
     def __init__(self):
-        buttons = ["A1", "A2", "A3", "A4", "A5", "A6", "TX"]
         self.prev = {
             "A1": cp.touch_A1,
             "A2": cp.touch_A2,
@@ -130,8 +131,8 @@ class Buttons:
             "TX": cp.touch_TX
             }
 
-        self.pressed = {b:False for b in buttons}
-        self.released = {b:False for b in buttons}
+        self.pressed = {b:False for b in ALL_KEYS}
+        self.released = {b:False for b in ALL_KEYS}
 
     def update(self):
         for b in self.pressed:
@@ -190,5 +191,3 @@ class Buttons:
 
 
 keyboard()
-
-#chord()
