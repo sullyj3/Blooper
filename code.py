@@ -35,14 +35,10 @@ def arp():
 def keyboard():
     arp()
 
-
     buttons = Buttons()
-
     octave_offset = 1
-
     while True:
         buttons.update()
-
         any_pressed = any((cp.touch_A1, cp.touch_A2, cp.touch_A3, cp.touch_A4,
             cp.touch_A5, cp.touch_A6, cp.touch_TX))
 
@@ -51,37 +47,31 @@ def keyboard():
             cp.start_tone(PTCH_C * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[6] = colors[0]
-
         if buttons.pressed["A2"]:
             cp.stop_tone()
             cp.start_tone(PTCH_D * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[7] = colors[1]
-
         if buttons.pressed["A3"]:
             cp.stop_tone()
             cp.start_tone(PTCH_E * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[8] = colors[2]
-
         if buttons.pressed["A4"]:
             cp.stop_tone()
             cp.start_tone(PTCH_F * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[1] = colors[3]
-
         if buttons.pressed["A5"]:
             cp.stop_tone()
             cp.start_tone(PTCH_G * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[2] = colors[4]
-
         if buttons.pressed["A6"]:
             cp.stop_tone()
             cp.start_tone(PTCH_A * 2**octave_offset)
             cp.pixels.fill(BLACK)
             cp.pixels[3] = colors[5]
-
         if buttons.pressed["TX"]:
             cp.stop_tone()
             cp.start_tone(PTCH_B * 2**octave_offset)
@@ -93,6 +83,22 @@ def keyboard():
             cp.pixels.fill(BLACK)
 
 
+'''Track when buttons are pressed and released
+
+This is a substitute for an event system. Keeps track of when buttons are pressed or released.
+You don't need this to know if the buttons are currently down, that's what cp.touch_A1 etc are for.
+
+usage:
+
+    buttons = Buttons()
+    while True:
+        buttons.update()
+        if buttons.pressed["A1"]:
+            # handle a1 pressed
+
+        if buttons.released["A1"]:
+            # handle a1 released
+'''
 class Buttons:
     def __init__(self):
         buttons = ["A1", "A2", "A3", "A4", "A5", "A6", "TX"]
@@ -105,6 +111,7 @@ class Buttons:
             "A6": cp.touch_A6,
             "TX": cp.touch_TX
             }
+
         self.pressed = {b:False for b in buttons}
         self.released = {b:False for b in buttons}
 
