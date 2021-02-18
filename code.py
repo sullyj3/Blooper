@@ -24,6 +24,8 @@ colors = [
 
 BLACK = (0,0,0)
 
+ALL_KEYS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX"]
+
 def arp():
     cp.play_tone(PTCH_C*2**0, 0.06)
     cp.play_tone(PTCH_G*2**0, 0.06)
@@ -32,55 +34,71 @@ def arp():
     cp.play_tone(PTCH_E*2**2, 0.06)
     cp.play_tone(PTCH_B*2**2, 0.06)
 
+key_note_map = {
+        "A1": PTCH_C,
+        "A2": PTCH_D,
+        "A3": PTCH_E,
+        "A4": PTCH_F,
+        "A5": PTCH_G,
+        "A6": PTCH_A,
+        "TX": PTCH_B,
+        }
+key_pixel_color_map = {
+        "A1": (6,0),
+        "A2": (7,1),
+        "A3": (8,2),
+        "A4": (1,3),
+        "A5": (2,4),
+        "A6": (3,5),
+        "TX": (4,6),
+        }
+
+# stops any currently playing tone, starts the one associated with the key, and
+# lights up the appropriate LED the right color
+def trigger_note(key, octave_offset):
+    cp.start_tone(key_note_map[key] * 2**octave_offset)
+    cp.pixels.fill(BLACK)
+    (pixel_ix, color_ix) = key_pixel_color_map[key]
+    cp.pixels.fill(BLACK)
+    cp.pixels[pixel_ix] = colors[color_ix]
+
 def keyboard():
     arp()
 
     buttons = Buttons()
     octave_offset = 1
+
+    # track which keys are currently pressed, and in what order they were
+    # pressed (most recent is last in the list). This allows us to revert to
+    # keys that are still being held when
+    # a key is released.
+    note_stack = []
+
     while True:
         buttons.update()
-        any_pressed = any((cp.touch_A1, cp.touch_A2, cp.touch_A3, cp.touch_A4,
-            cp.touch_A5, cp.touch_A6, cp.touch_TX))
 
-        if buttons.pressed["A1"]:
-            cp.stop_tone()
-            cp.start_tone(PTCH_C * 2**octave_offset)
-            cp.pixels.fill(BLACK)
-            cp.pixels[6] = colors[0]
-        if buttons.pressed["A2"]:
-            cp.stop_tone()
-            cp.start_tone(PTCH_D * 2**octave_offset)
-            cp.pixels.fill(BLACK)
-            cp.pixels[7] = colors[1]
-        if buttons.pressed["A3"]:
-            cp.stop_tone()
-            cp.start_tone(PTCH_E * 2**octave_offset)
-            cp.pixels.fill(BLACK)
-            cp.pixels[8] = colors[2]
-        if buttons.pressed["A4"]:
-            cp.stop_tone()
-            cp.start_tone(PTCH_F * 2**octave_offset)
-            cp.pixels.fill(BLACK)
-            cp.pixels[1] = colors[3]
-        if buttons.pressed["A5"]:
-            cp.stop_tone()
-            cp.start_tone(PTCH_G * 2**octave_offset)
-            cp.pixels.fill(BLACK)
-            cp.pixels[2] = colors[4]
-        if buttons.pressed["A6"]:
-            cp.stop_tone()
-            cp.start_tone(PTCH_A * 2**octave_offset)
-            cp.pixels.fill(BLACK)
-            cp.pixels[3] = colors[5]
-        if buttons.pressed["TX"]:
-            cp.stop_tone()
-            cp.start_tone(PTCH_B * 2**octave_offset)
-            cp.pixels.fill(BLACK)
-            cp.pixels[4] = colors[6]
+        for k in ALL_KEYS:
+            if buttons.pressed[k]:
+                note_stack.append(k)
+                cp.stop_tone()
+                trigger_note(k, octave_offset)
 
-        if not any_pressed:
-            cp.stop_tone()
-            cp.pixels.fill(BLACK)
+        for k in ALL_KEYS:
+            if buttons.released[k]:
+                # if we release the most recently pressed key, ie, the note currently playing,
+                # we stop the tone and start the next most recently pressed note, if any
+                if note_stack[-1] == k:
+                    # switch off the LED
+                    (pixel_ix,_) = key_pixel_color_map[k]
+                    cp.pixels[pixel_ix] = BLACK
+
+                    note_stack.pop()
+                    cp.stop_tone()
+                    if note_stack:
+                        curr_key = note_stack[-1]
+                        trigger_note(curr_key, octave_offset)
+                else:
+                    note_stack.remove(k)
 
 
 '''Track when buttons are pressed and released
