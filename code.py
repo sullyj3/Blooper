@@ -115,7 +115,7 @@ class Sequencer:
         self.next_epoch = None
         self.epoch_length = epoch_length
 
-        self.sequence = [1,2,3,4,5,6,7,8]
+        self.sequence = [8,8,12,8,10,8,9,8] + [8,8,8,8,8,8,8,8] + [8,8,12,8,10,8,9,9] + [9,9,9,10,9,8,6,5]
         self.playhead = 0
 
     def tick(self):
@@ -125,7 +125,7 @@ class Sequencer:
             self.next_epoch += self.epoch_length
 
     def start_note(self, key="A1", octave=0):
-        trigger_note(key, octave+1)
+        trigger_note(key, octave)
         self.note_on = True
 
     def stop_note(self):
@@ -176,7 +176,7 @@ class Sequencer:
                 self.toggle_playing()
 
 def sequencer():
-    seq = Sequencer(0.25)
+    seq = Sequencer(0.2)
     seq.run()
 
 
