@@ -55,6 +55,11 @@ key_pixel_color_map = {
         "TX": (4,6),
         }
 
+def degree_to_key_octave(degree: int) -> (str, int):
+    key = key_note_map.keys()[degree % 8]
+    octave = degree // 8
+    return (key, octave)
+
 # stops any currently playing tone, starts the one associated with the key, and
 # lights up the appropriate LED the right color
 def trigger_note(key, octave_offset):
@@ -109,14 +114,17 @@ class Sequencer:
         self.next_epoch = None
         self.epoch_length = epoch_length
 
+        self.sequence = [1,2,3,4,5,6,7,8]
+        self.playhead = 0
+
     def tick(self):
         now = time.monotonic()
         if now >= self.next_epoch:
-            self.toggle_note()
+            self.next_note()
             self.next_epoch += self.epoch_length
 
-    def start_note(self):
-        trigger_note("A5", 2)
+    def start_note(self, key="A1", octave=0):
+        trigger_note(key, octave)
         self.note_on = True
 
     def stop_note(self):
@@ -129,11 +137,21 @@ class Sequencer:
         else:
             self.start_note()
 
+    # start the next note in the sequence and advance the playhead
+    def next_note(self):
+        self.stop_note()
+        next_degree = self.sequence[self.playhead]
+        (key,octve) = degree_to_key_octave(next_degree)
+        self.start_note(key, octave)
+
+        # todo: can probably use itertools.cycle to avoid index issues
+        self.playhead = (self.playhead + 1) % len(self.sequence)
+
     def play(self):
         self.playing = True
         now = time.monotonic()
-        self.start_note()
-        self.next_epoch = now + self.epoch_length
+        self.playhead = 0
+        self.next_epoch = now
 
     def stop(self):
         self.stop_note()
@@ -156,7 +174,7 @@ class Sequencer:
                 self.toggle_playing()
 
 def sequencer():
-    seq = Sequencer(0.1)
+    seq = Sequencer(0.5)
     seq.run()
 
 
