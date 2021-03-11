@@ -102,37 +102,62 @@ def keyboard():
                 else:
                     note_stack.remove(k)
 
-def sequencer():
-    buttons = Buttons()
+class Sequencer:
+    def __init__(self, epoch_length=1):
+        self.playing = False
+        self.note_on = False
+        self.next_epoch = None
+        self.epoch_length = epoch_length
 
-    now = time.monotonic()
-    next_time = now + 1
-    state = {"active": False, "note_on": False}
-    while True:
+    def tick(self):
         now = time.monotonic()
-        if now >= next_time:
-            tick(state)
-            next_time = next_time + 0.25
+        if now >= self.next_epoch:
+            self.toggle_note()
+            self.next_epoch += self.epoch_length
 
-        buttons.update()
-        if buttons.pressed["BTN_A"]:
-            if state["note_on"]:
-                cp.stop_tone()
-                state["note_on"] = False
-            state["active"] = not state["active"]
+    def start_note(self):
+        trigger_note("A5", 2)
+        self.note_on = True
 
-
-def tick(state):
-    if not state["active"]:
-        return
-
-    note_on = state["note_on"]
-    if note_on:
+    def stop_note(self):
         cp.stop_tone()
-    else:
-        trigger_note("A1", 2)
+        self.note_on = False
 
-    state["note_on"] = not note_on
+    def toggle_note(self):
+        if self.note_on:
+            self.stop_note()
+        else:
+            self.start_note()
+
+    def play(self):
+        self.playing = True
+        now = time.monotonic()
+        self.start_note()
+        self.next_epoch = now + self.epoch_length
+
+    def stop(self):
+        self.stop_note()
+        self.playing = False
+
+    def toggle_playing(self):
+        if self.playing:
+            self.stop()
+        else:
+            self.play()
+
+    def run(self):
+        buttons = Buttons()
+        while True:
+            if self.playing:
+                self.tick()
+
+            buttons.update()
+            if buttons.pressed["BTN_A"]:
+                self.toggle_playing()
+
+def sequencer():
+    seq = Sequencer(0.1)
+    seq.run()
 
 
 '''Track when buttons are pressed and released
@@ -232,4 +257,3 @@ class Buttons:
 
 #keyboard()
 sequencer()
-
