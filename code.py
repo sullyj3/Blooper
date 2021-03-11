@@ -24,7 +24,8 @@ colors = [
 
 BLACK = (0,0,0)
 
-ALL_KEYS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX", "BTN_A"]
+ALL_BUTTONS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX", "BTN_A"]
+ALL_KEYS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX"]
 
 def arp():
     cp.play_tone(PITCH_C*2**0, 0.06)
@@ -56,8 +57,8 @@ key_pixel_color_map = {
         }
 
 def degree_to_key_octave(degree: int) -> (str, int):
-    key = key_note_map.keys()[degree % 8]
-    octave = degree // 8
+    key = ALL_KEYS[(degree - 1) % len(ALL_KEYS)]
+    octave = (degree-1) // len(ALL_KEYS)
     return (key, octave)
 
 # stops any currently playing tone, starts the one associated with the key, and
@@ -84,13 +85,13 @@ def keyboard():
     while True:
         buttons.update()
 
-        for k in ALL_KEYS:
+        for k in ALL_BUTTONS:
             if buttons.pressed[k]:
                 note_stack.append(k)
                 cp.stop_tone()
                 trigger_note(k, octave_offset)
 
-        for k in ALL_KEYS:
+        for k in ALL_BUTTONS:
             if buttons.released[k]:
                 # if we release the most recently pressed key, ie, the note currently playing,
                 # we stop the tone and start the next most recently pressed note, if any
@@ -124,7 +125,7 @@ class Sequencer:
             self.next_epoch += self.epoch_length
 
     def start_note(self, key="A1", octave=0):
-        trigger_note(key, octave)
+        trigger_note(key, octave+1)
         self.note_on = True
 
     def stop_note(self):
@@ -141,7 +142,8 @@ class Sequencer:
     def next_note(self):
         self.stop_note()
         next_degree = self.sequence[self.playhead]
-        (key,octve) = degree_to_key_octave(next_degree)
+        (key,octave) = degree_to_key_octave(next_degree)
+        print(key, octave)
         self.start_note(key, octave)
 
         # todo: can probably use itertools.cycle to avoid index issues
@@ -174,7 +176,7 @@ class Sequencer:
                 self.toggle_playing()
 
 def sequencer():
-    seq = Sequencer(0.5)
+    seq = Sequencer(0.25)
     seq.run()
 
 
@@ -207,8 +209,8 @@ class Buttons:
             "BTN_A" : cp.button_a
             }
 
-        self.pressed = {b:False for b in ALL_KEYS}
-        self.released = {b:False for b in ALL_KEYS}
+        self.pressed = {b:False for b in ALL_BUTTONS}
+        self.released = {b:False for b in ALL_BUTTONS}
 
     def update(self):
         for b in self.pressed:
@@ -273,5 +275,5 @@ class Buttons:
             self.prev["BTN_A"] = False
 
 
-#keyboard()
-sequencer()
+if __name__ == '__main__':
+    sequencer()
