@@ -24,7 +24,7 @@ colors = [
 
 BLACK = (0,0,0)
 
-ALL_KEYS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX"]
+ALL_KEYS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX", "BTN_A"]
 
 def arp():
     cp.play_tone(PITCH_C*2**0, 0.06)
@@ -102,6 +102,38 @@ def keyboard():
                 else:
                     note_stack.remove(k)
 
+def sequencer():
+    buttons = Buttons()
+
+    now = time.monotonic()
+    next_time = now + 1
+    state = {"active": False, "note_on": False}
+    while True:
+        now = time.monotonic()
+        if now >= next_time:
+            tick(state)
+            next_time = next_time + 0.25
+
+        buttons.update()
+        if buttons.pressed["BTN_A"]:
+            if state["note_on"]:
+                cp.stop_tone()
+                state["note_on"] = False
+            state["active"] = not state["active"]
+
+
+def tick(state):
+    if not state["active"]:
+        return
+
+    note_on = state["note_on"]
+    if note_on:
+        cp.stop_tone()
+    else:
+        trigger_note("A1", 2)
+
+    state["note_on"] = not note_on
+
 
 '''Track when buttons are pressed and released
 
@@ -128,7 +160,8 @@ class Buttons:
             "A4": cp.touch_A4,
             "A5": cp.touch_A5,
             "A6": cp.touch_A6,
-            "TX": cp.touch_TX
+            "TX": cp.touch_TX,
+            "BTN_A" : cp.button_a
             }
 
         self.pressed = {b:False for b in ALL_KEYS}
@@ -189,5 +222,14 @@ class Buttons:
             self.released["TX"] = True
             self.prev["TX"] = False
 
+        if not self.prev["BTN_A"] and cp.button_a:
+            self.pressed["BTN_A"] = True
+            self.prev["BTN_A"] = True
+        elif self.prev["BTN_A"] and not cp.button_a:
+            self.released["BTN_A"] = True
+            self.prev["BTN_A"] = False
 
-keyboard()
+
+#keyboard()
+sequencer()
+
