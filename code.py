@@ -24,7 +24,7 @@ colors = [
 
 BLACK = (0,0,0)
 
-ALL_BUTTONS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX", "BTN_A"]
+ALL_BUTTONS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX", "BTN_A", "BTN_B"]
 ALL_KEYS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX"]
 
 def arp():
@@ -132,6 +132,7 @@ class Sequencer:
         cp.stop_tone()
         self.note_on = False
 
+
     def toggle_note(self):
         if self.note_on:
             self.stop_note()
@@ -206,7 +207,8 @@ class Buttons:
             "A5": cp.touch_A5,
             "A6": cp.touch_A6,
             "TX": cp.touch_TX,
-            "BTN_A" : cp.button_a
+            "BTN_A" : cp.button_a,
+            "BTN_B" : cp.button_b
             }
 
         self.pressed = {b:False for b in ALL_BUTTONS}
@@ -274,6 +276,12 @@ class Buttons:
             self.released["BTN_A"] = True
             self.prev["BTN_A"] = False
 
+        if not self.prev["BTN_B"] and cp.button_b:
+            self.pressed["BTN_B"] = True
+            self.prev["BTN_B"] = True
+        elif self.prev["BTN_B"] and not cp.button_b:
+            self.released["BTN_B"] = True
+            self.prev["BTN_B"] = False
 
 if __name__ == '__main__':
     sequencer()
