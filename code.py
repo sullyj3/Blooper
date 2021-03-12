@@ -158,7 +158,7 @@ class Sequencer:
         self.sequence = [8,8,12,8,10,8,9,8] + [8,8,8,8,8,8,8,8] + [8,8,12,8,10,8,9,9] + [9,9,9,10,9,8,6,5]
         self.playhead = 0
 
-    def advance_playhead(self):
+    def tick_playhead(self):
         now = time.monotonic()
         if now >= self.next_epoch:
             self.next_note()
@@ -217,7 +217,7 @@ class Sequencer:
 
         while True:
             if self.playing:
-                self.advance_playhead()
+                self.tick_playhead()
             else:
                 blinker.update()
 
