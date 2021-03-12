@@ -149,6 +149,7 @@ class Pulse:
 
 
 class Sequencer:
+    # todo think of a better name than epoch
     def __init__(self, epoch_length=1):
         self.playing = False
         self.note_on = False
