@@ -23,6 +23,7 @@ colors = [
         ]
 
 BLACK = (0,0,0)
+BLUE = (0,0,50)
 
 ALL_BUTTONS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX", "BTN_A", "BTN_B"]
 ALL_KEYS = ["A1", "A2", "A3", "A4", "A5", "A6", "TX"]
@@ -108,6 +109,45 @@ def keyboard():
                 else:
                     note_stack.remove(k)
 
+# possibly we should remove the callback stuff and let users just check
+# self.state? Fuck around and find out
+class Pulse:
+    def __init__(self, on_interval, off_interval=None):
+        self.on_interval = on_interval
+        self.off_interval = off_interval if off_interval is not None else on_interval
+
+        self.subscribers = {}
+
+        self.state = None
+        self.next_toggle = None
+
+    def start(self):
+        now = time.monotonic()
+        self.state = True
+        self.next_toggle = now + self.on_interval
+
+    def update(self):
+        now = time.monotonic()
+        if now >= self.next_toggle:
+            self.state = not self.state
+            self.next_toggle = now + (self.on_interval if self.state else self.off_interval)
+
+        self.notify_subscribers()
+
+    def notify_subscribers(self):
+        for callback in self.subscribers.values():
+            callback(self.state)
+
+    def subscribe(self, key, f):
+        if key in self.subscribers:
+            print(f"warning, ovewriting subscriber {key}")
+
+        self.subscribers[key] = f
+
+    def unsubscribe(self, key):
+        del self.subscribers[key]
+
+
 class Sequencer:
     def __init__(self, epoch_length=1):
         self.playing = False
@@ -158,23 +198,37 @@ class Sequencer:
 
     def stop(self):
         self.stop_note()
+        cp.pixels.fill(BLACK)
         self.playing = False
-
-    def toggle_playing(self):
-        if self.playing:
-            self.stop()
-        else:
-            self.play()
 
     def run(self):
         buttons = Buttons()
+
+        blinker = Pulse(0.5)
+
+        def set_lights(b):
+            print(b)
+            color = BLUE if b else BLACK
+            cp.pixels[0] = color
+            cp.pixels[9] = color
+
+        blinker.subscribe("set lights", set_lights)
+        blinker.start()
+
         while True:
             if self.playing:
                 self.tick()
+            else:
+                blinker.update()
 
+            # handle state transitions
             buttons.update()
             if buttons.pressed["BTN_A"]:
-                self.toggle_playing()
+                if self.playing:
+                    self.stop()
+                    blinker.start()
+                else:
+                    self.play()
 
 def sequencer():
     seq = Sequencer(0.2)
