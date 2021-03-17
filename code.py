@@ -208,68 +208,56 @@ class Sequencer:
         cp.pixels.fill(BLACK)
         self.playing = False
 
-    def run(self):
-        buttons = Buttons()
+    def update(self, buttons):
+        if self.playing:
+            self.tick_playhead()
 
-        bottom_blinker = Pulse(0.5)
-        fast_blinker = Pulse(0.1)
 
-        def set_lights(b):
+class Editor:
+    def __init__(self):
+        self.selected_step = 0
+        self.sequence = [8,8,12,8,10,8,9,8]
+
+        self.bottom_blinker = Pulse(0.5)
+        self.selected_blinker = Pulse(0.1)
+
+        def blink_blue(b):
             color = BLUE if b else BLACK
             cp.pixels[0] = color
             cp.pixels[9] = color
 
-        def light_setter(color, indices):
-            def f(b):
-                the_color = color if b else BLACK
-                for i in indices:
-                    cp.pixels[i] = the_color
-            return f
-
-        def toggle_selected(b):
+        def blink_selected(b):
             color = GREEN if b else BLACK
-            pixel_index = sequence_led_indices[self.editor_selected_step]
+            pixel_index = sequence_led_indices[self.selected_step]
             cp.pixels[pixel_index] = color
 
+        self.bottom_blinker.subscribe("blink blue", blink_blue)
+        self.selected_blinker.subscribe("blink selected", blink_selected)
 
-        bottom_blinker.subscribe("set lights", set_lights)
-        bottom_blinker.start()
-
-        fast_blinker.start()
-        fast_blinker.subscribe("fast", toggle_selected)
-
-        while True:
-            buttons.update()
-
-            if self.playing:
-                self.tick_playhead()
-            else:
-                # editor mode
-                #A3 and A4 are left and right
-                if buttons.pressed["A3"]:
-                    pixel_index = sequence_led_indices[self.editor_selected_step]
-                    cp.pixels[pixel_index] = BLACK
-                    self.editor_selected_step = (self.editor_selected_step - 1) % 8
-                if buttons.pressed["A4"]:
-                    pixel_index = sequence_led_indices[self.editor_selected_step]
-                    cp.pixels[pixel_index] = BLACK
-                    self.editor_selected_step = (self.editor_selected_step + 1) % 8
-
-                bottom_blinker.update()
-                fast_blinker.update()
+    def start(self):
+        self.bottom_blinker.start()
+        self.selected_blinker.start()
 
 
-            # handle state transitions
-            if buttons.pressed["BTN_A"]:
-                if self.playing:
-                    self.stop()
-                    bottom_blinker.start()
+    # called by main loop
+    def update(self, buttons):
+        #A3 and A4 are left and right
+        if buttons.pressed["A3"]:
+            pixel_index = sequence_led_indices[self.selected_step]
+            cp.pixels[pixel_index] = BLACK
+            self.selected_step = (self.selected_step - 1) % 8
+        if buttons.pressed["A4"]:
+            pixel_index = sequence_led_indices[self.selected_step]
+            cp.pixels[pixel_index] = BLACK
+            self.selected_step = (self.selected_step + 1) % 8
 
-                    fast_blinker.start()
-                else:
-                    self.play()
+        self.bottom_blinker.update()
+        self.selected_blinker.update()
 
+# We have 8 steps in our sequence (for now?). Each of those steps is
+# represented by the pixel at the given index blinking
 sequence_led_indices = {
+    # if step 0 is selected, pixel 5 blinks, etc
     0:5,
     1:6,
     2:7,
@@ -280,9 +268,36 @@ sequence_led_indices = {
     7:4,
     }
 
-def sequencer():
-    seq = Sequencer(0.2)
-    seq.run()
+def main():
+    EDITOR = 0
+    PLAYING = 1
+
+    buttons = Buttons()
+    sequencer = Sequencer(0.2)
+    editor = Editor()
+
+    state = EDITOR
+    editor.start()
+
+    while True:
+        buttons.update()
+
+        # handle state transitions
+        if buttons.pressed["BTN_A"]:
+            if state == EDITOR:
+                sequencer.play()
+                state = PLAYING
+            elif state == PLAYING:
+                sequencer.stop()
+                editor.start()
+                state = EDITOR
+        
+        # handle active state
+        if state == EDITOR:
+            editor.update(buttons)
+        elif state == PLAYING:
+            sequencer.update(buttons)
+
 
 
 '''Track when buttons are pressed and released
@@ -303,6 +318,10 @@ usage:
 '''
 class Buttons:
     def __init__(self):
+        # prev essentially tracks the down state of each button, lagging by one
+        # update call.
+        # So for example, if a button was `up` last update call, but is `down`
+        # now, that means the button must have been pressed in the intervening time
         self.prev = {
             "A1": cp.touch_A1,
             "A2": cp.touch_A2,
@@ -318,12 +337,16 @@ class Buttons:
         self.pressed = {b:False for b in ALL_BUTTONS}
         self.released = {b:False for b in ALL_BUTTONS}
 
+    # Determine which buttons were pressed or released in the time since the last update call
+    # sets the state of self.pressed or self.released, which are then available for inspection
     def update(self):
+        # Clear the events that happened last time
         for b in self.pressed:
             self.pressed[b] = False
         for b in self.released:
             self.released[b] = False
 
+        # check whether each button was pressed or released since last time
         if not self.prev["A1"] and cp.touch_A1:
             self.pressed["A1"] = True
             self.prev["A1"] = True
@@ -388,4 +411,4 @@ class Buttons:
             self.prev["BTN_B"] = False
 
 if __name__ == '__main__':
-    sequencer()
+    main()
