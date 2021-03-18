@@ -72,6 +72,10 @@ def trigger_note(key, octave_offset):
     cp.pixels.fill(BLACK)
     cp.pixels[pixel_ix] = colors[color_ix]
 
+def trigger_degree(degree):
+    (key,octave) = degree_to_key_octave(degree)
+    cp.start_tone(key_note_map[key] * 2**octave)
+
 def keyboard():
     arp()
 
@@ -191,7 +195,6 @@ class Sequencer:
         self.stop_note()
         next_degree = self.sequence[self.playhead]
         (key,octave) = degree_to_key_octave(next_degree)
-        print(key, octave)
         self.start_note(key, octave)
 
         # todo: can probably use itertools.cycle to avoid index issues
@@ -241,15 +244,30 @@ class Editor:
 
     # called by main loop
     def update(self, buttons):
+
+        
         #A3 and A4 are left and right
         if buttons.pressed["A3"]:
             pixel_index = sequence_led_indices[self.selected_step]
             cp.pixels[pixel_index] = BLACK
             self.selected_step = (self.selected_step - 1) % 8
+
+            trigger_degree(self.sequence[self.selected_step])
+            self.selected_blinker.start()
+            # TODO schedule note off instead of sleeping
+            time.sleep(0.1)
+            cp.stop_tone()
+
         if buttons.pressed["A4"]:
             pixel_index = sequence_led_indices[self.selected_step]
             cp.pixels[pixel_index] = BLACK
             self.selected_step = (self.selected_step + 1) % 8
+
+            trigger_degree(self.sequence[self.selected_step])
+            self.selected_blinker.start()
+            # TODO schedule note off instead of sleeping
+            time.sleep(0.1)
+            cp.stop_tone()
 
         self.bottom_blinker.update()
         self.selected_blinker.update()
